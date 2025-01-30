@@ -630,6 +630,7 @@ def _finalize_dtypes(
     """
     import db_dtypes
     import pandas.api.types
+    import pandas
 
     # If you update this mapping, also update the table at
     # `docs/reading.rst`.
@@ -638,6 +639,14 @@ def _finalize_dtypes(
         "DATETIME": "datetime64[ns]",
         "TIMESTAMP": "datetime64[ns]",
     }
+    if pandas.__version__ > "2.0.0":
+        # when pandas is 2.0.0 or later, default timestamp dtype is 'datetime64[us]'
+        # and we should use 'datetime64[us]' instead of 'datetime64[ns]'
+        dtype_map = {
+            "DATE": db_dtypes.DateDtype(),
+            "DATETIME": "datetime64[us]",
+            "TIMESTAMP": pandas.DatetimeTZDtype(unit="us", tz="UTC"),
+        }
 
     for field in schema_fields:
         # This method doesn't modify ARRAY/REPEATED columns.
